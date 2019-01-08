@@ -61,3 +61,7 @@ CPack*
 CTest*
 cmake*.cmake
 _CPack*
+build/*
+
+[#]*[#]
+.\#*

@@ -474,6 +474,62 @@ TriDistance(PQP_REAL R[3][3], PQP_REAL T[3], const Tri *t1, const Tri *t2,
 }
 
 
+void Inside(PQP_CollideResult *res, const PQP_Model *o1, const PQP_Model *o2)
+{
+  // search if all BV of o2 lies inside o1:
+  bool overlap=false;
+
+  for(int i=0;i<o1->num_bvs;++i)
+  {
+    int b1=i;
+    overlap=false;
+    for (int j=0;j<o2->num_bvs;++j)
+    {
+      int b2=j;
+      if(BV_Overlap2(res->R,res->T,o1->child(b1),o2->child(b2)))
+      {
+        overlap=true;
+        break;
+      }
+    }
+    if(overlap==false)
+    {
+      break;
+    }
+  }
+  
+  if(overlap==true)
+  {
+    res->Add(0,0);
+    return;
+  }
+
+  for(int i=0;i<o2->num_bvs;++i)
+  {
+    int b2=i;
+    overlap=false;
+    for (int j=0;j<o1->num_bvs;++j)
+    {
+      int b1=j;
+      if(BV_Overlap2(res->R,res->T,o1->child(b1),o2->child(b2)))
+      {
+        overlap=true;
+        break;
+      }
+    }
+    if(overlap==false)
+    {
+      break;
+    }
+  }
+  if(overlap==true)
+  {
+    res->Add(0,0);
+    return;
+  }
+  return;
+  
+}
 void
 CollideRecurse(PQP_CollideResult *res,
                const PQP_Model *o1, int b1, 
@@ -486,6 +542,7 @@ CollideRecurse(PQP_CollideResult *res,
   //original PQP had this here
   //if (!BV_Overlap2(res->R, res->T, o1->child(b1), o2->child(b2))) return;
 
+  
   // if we are, see if we test triangles next
 
   int l1 = o1->child(b1)->Leaf();
@@ -516,8 +573,26 @@ CollideRecurse(PQP_CollideResult *res,
   }
 
   //moving this out if both bbs are leafs
-  if (!BV_Overlap2(res->R, res->T, o1->child(b1), o2->child(b2))) return;
+  //if (!BV_Overlap2(res->R, res->T, o1->child(b1), o2->child(b2))) return;
 
+  // Bala: The BV_overlap test does not update "res". This is fine if the two objects are:
+  // 1. Not in collision ( BV will show the two objects are disjoint)
+  // 2. Have intersecting triangles ( TriContact will return collision values)
+  // However, when one bv is inside another bv with no intersecting triangles, CollideRecurse will return false which is not correct.
+
+  if (!BV_Overlap2(res->R, res->T, o1->child(b1), o2->child(b2)))
+  {
+    return;  
+  }
+  /*
+  else
+  {
+    res->Add(0,0);
+    return;  // Not sure if I need to return here.
+  }
+  */
+  
+  
   // we dont, so decide whose children to visit next
 
   PQP_REAL sz1 = o1->child(b1)->GetSize();
@@ -581,6 +656,14 @@ PQP_Collide(PQP_CollideResult *res,
   // now start with both top level BVs  
 
   CollideRecurse(res,o1,0,o2,0,flag);
+
+  // if triangle intersects, return:
+  if(res->num_pairs>0)
+  {
+    return PQP_OK;
+  }
+  // Check if mesh is inside another mesh:
+  Inside(res,o1,o2);
   
   return PQP_OK; 
 }
