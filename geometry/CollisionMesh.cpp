@@ -1336,7 +1336,6 @@ bool Collide(const CollisionMesh& m,const Sphere3D& s)
 {
   Sphere3D slocal;
   m.currentTransform.mulInverse(s.center,slocal.center);
-  cerr<<"*****D: "<<slocal.center<<" "<<m.pqpModel->num_bvs<<endl;
   slocal.radius = s.radius;
   Vector3 pt;
   return CollideRecurse(slocal,*m.pqpModel,0,pt)>=0;
