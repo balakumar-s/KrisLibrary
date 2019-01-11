@@ -188,7 +188,7 @@ CollisionMeshQuery::~CollisionMeshQuery()
   SafeDelete(penetration2);
 }
 
-bool CollisionMeshQuery::Collide()
+int CollisionMeshQuery::Collide()
 {
   if(m1->tris.empty() || m2->tris.empty()) return false;
   if(m1->pqpModel == NULL || m2->pqpModel == NULL) return false;
@@ -199,11 +199,15 @@ bool CollisionMeshQuery::Collide()
 		      R1,T1,m1->pqpModel,
 		      R2,T2,m2->pqpModel,
 		      PQP_FIRST_CONTACT);
-  Assert(res == PQP_OK);
-  return (pqpResults->collide.Colliding()!=0);
+  Assert(res == PQP_OK || res == PQP_INTERSECTION_FAIL);
+  if(res==PQP_INTERSECTION_FAIL)
+  {
+    return 2;
+  }
+  return int(pqpResults->collide.Colliding()!=0);
 }
 
-bool CollisionMeshQuery::CollideAll()
+int CollisionMeshQuery::CollideAll()
 {
   if(m1->tris.empty() || m2->tris.empty()) return false;
   if(m1->pqpModel == NULL || m2->pqpModel == NULL) return false;
@@ -214,8 +218,12 @@ bool CollisionMeshQuery::CollideAll()
 		      R1,T1,m1->pqpModel,
 		      R2,T2,m2->pqpModel,
 		      PQP_ALL_CONTACTS);
-  Assert(res == PQP_OK);
-  return (pqpResults->collide.Colliding()!=0);
+  Assert(res == PQP_OK || res == PQP_INTERSECTION_FAIL);
+  if(res==PQP_INTERSECTION_FAIL)
+  {
+    return 2;
+  }
+  return int(pqpResults->collide.Colliding()!=0);
 }
 
 Real CollisionMeshQuery::Distance(Real absErr,Real relErr,Real bound)
@@ -772,7 +780,7 @@ inline Real distance(const Segment3D& s,const Point3D& p)
   return p.distance(temp);
 }
 
-bool Collide(const Meshing::TriMesh& m1,const Meshing::TriMesh& m2)
+int Collide(const Meshing::TriMesh& m1,const Meshing::TriMesh& m2)
 {
   CollisionMesh cm1(m1),cm2(m2);
   return Collide(cm1,cm2);
@@ -1324,7 +1332,7 @@ int ClosestPoint(const CollisionMesh& mesh,const Vector3& p,Vector3& cp)
 
 
 
-int Collide(const CollisionMesh& m,const Segment3D& s,Vector3& pt)
+bool Collide(const CollisionMesh& m,const Segment3D& s,Vector3& pt)
 {
   Segment3D slocal;
   m.currentTransform.mulInverse(s.a,slocal.a);
@@ -1428,7 +1436,7 @@ bool WithinDistance(const CollisionMesh& c,const GeometricPrimitive3D& a,Real d)
   }
 }
 
-bool Collide(const CollisionMesh& m1,const CollisionMesh& m2)
+int Collide(const CollisionMesh& m1,const CollisionMesh& m2)
 {
 
   if(m1.tris.empty() || m2.tris.empty()) return false;
@@ -1441,8 +1449,12 @@ bool Collide(const CollisionMesh& m1,const CollisionMesh& m2)
 		      R1,T1,m1.pqpModel,
 		      R2,T2,m2.pqpModel,
 		      PQP_FIRST_CONTACT);
-  Assert(res == PQP_OK);
-  return (collide.Colliding()!=0);
+    Assert(res == PQP_OK || res == PQP_INTERSECTION_FAIL);
+  if(res==PQP_INTERSECTION_FAIL)
+  {
+    return 2;
+  }
+  return int(collide.Colliding()!=0);
 }
 
 

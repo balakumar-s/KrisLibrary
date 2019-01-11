@@ -54,6 +54,10 @@ const int PQP_OK = 0;
   // Used by all API routines upon successful completion except
   // constructors and destructors
 
+const int PQP_INTERSECTION_FAIL=2;
+  // Returned when TriContact does not find intersecting triangles but there is BV overlap.
+  // This occurs when 1) two non-colliding meshes are very close to each other or 2) one mesh is inside another mesh.
+
 const int PQP_ERR_MODEL_OUT_OF_MEMORY = -1; 
   // Returned when an API function cannot obtain enough memory to
   // store or process a PQP_Model object.
@@ -83,6 +87,7 @@ const int PQP_ERR_BUILD_EMPTY_MODEL = -5;
   // OUT_OF_SEQUENCE return code, except that the requested operation
   // has FAILED -- the model remains "unprocessed", and the client may
   // NOT use it in queries.
+
 
 //----------------------------------------------------------------------------
 //

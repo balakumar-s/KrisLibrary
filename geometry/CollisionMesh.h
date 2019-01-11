@@ -59,8 +59,8 @@ class CollisionMeshQuery
   ~CollisionMeshQuery();
   const CollisionMeshQuery& operator = (const CollisionMeshQuery& q);
 
-  bool Collide();
-  bool CollideAll();
+  int Collide();
+  int CollideAll();
   Real Distance(Real absErr,Real relErr,Real bound=Inf);
   Real Distance_Coherent(Real absErr,Real relErr,Real bound=Inf);
   bool WithinDistance(Real tol);
@@ -132,12 +132,12 @@ void GetBB(const CollisionMesh& m,Box3D& bb);
 
 /// Checks for collision between s and m.  Returns the
 /// index of the tri, or -1 if none, and computes the intersecting point pt.
-int Collide(const CollisionMesh& m,const Segment3D& s,Vector3& pt);
+bool Collide(const CollisionMesh& m,const Segment3D& s,Vector3& pt);
 /// Returns true if m intersects the given geometry
 bool Collide(const CollisionMesh& m,const Sphere3D& s);
 bool Collide(const CollisionMesh& m,const AABB3D& b);
 bool Collide(const CollisionMesh& m,const Box3D& b);
-bool Collide(const CollisionMesh& m1,const CollisionMesh& m2);
+int Collide(const CollisionMesh& m1,const CollisionMesh& m2);
 bool Collide(const CollisionMesh& m,const GeometricPrimitive3D& g);
 
 ///Casts a ray at the mesh, returns the index of the first triangle hit

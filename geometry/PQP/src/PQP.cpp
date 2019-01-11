@@ -473,7 +473,7 @@ TriDistance(PQP_REAL R[3][3], PQP_REAL T[3], const Tri *t1, const Tri *t2,
 }
 
 
-void Inside(PQP_CollideResult *res, const PQP_Model *o1, const PQP_Model *o2)
+bool Inside(PQP_CollideResult *res, const PQP_Model *o1, const PQP_Model *o2)
 {
   // search if all BV of o2 lies inside o1:
   bool overlap=false;
@@ -499,8 +499,8 @@ void Inside(PQP_CollideResult *res, const PQP_Model *o1, const PQP_Model *o2)
   
   if(overlap==true)
   {
-    res->Add(0,0);
-    return;
+    
+    return true;
   }
 
   for(int i=0;i<o2->num_bvs;++i)
@@ -523,10 +523,9 @@ void Inside(PQP_CollideResult *res, const PQP_Model *o1, const PQP_Model *o2)
   }
   if(overlap==true)
   {
-    res->Add(0,0);
-    return;
+    return true;
   }
-  return;
+  return false;
   
 }
 void
@@ -662,8 +661,10 @@ PQP_Collide(PQP_CollideResult *res,
     return PQP_OK;
   }
   // Check if mesh is inside another mesh:
-  Inside(res,o1,o2);
-  
+  if(Inside(res,o1,o2))
+  {
+    return PQP_INTERSECTION_FAIL;
+  }
   return PQP_OK; 
 }
 

@@ -50,6 +50,11 @@
 //
 //----------------------------------------------------------------------------
 
+
+const int PQP_INTERSECTION_FAIL=2;
+  // Returned when TriContact does not find intersecting triangles but there is BV overlap.
+  // This occurs when 1) two non-colliding meshes are very close to each other or 2) one mesh is inside another mesh.
+
 const int PQP_OK = 0; 
   // Used by all API routines upon successful completion except
   // constructors and destructors
