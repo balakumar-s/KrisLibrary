@@ -202,7 +202,7 @@ int CollisionMeshQuery::Collide()
   Assert(res == PQP_OK || res == PQP_INTERSECTION_FAIL);
   if(res==PQP_INTERSECTION_FAIL)
   {
-    return 2;
+    return PQP_INTERSECTION_FAIL;
   }
   return int(pqpResults->collide.Colliding()!=0);
 }
@@ -221,7 +221,7 @@ int CollisionMeshQuery::CollideAll()
   Assert(res == PQP_OK || res == PQP_INTERSECTION_FAIL);
   if(res==PQP_INTERSECTION_FAIL)
   {
-    return 2;
+    return PQP_INTERSECTION_FAIL;
   }
   return int(pqpResults->collide.Colliding()!=0);
 }
@@ -1452,7 +1452,7 @@ int Collide(const CollisionMesh& m1,const CollisionMesh& m2)
     Assert(res == PQP_OK || res == PQP_INTERSECTION_FAIL);
   if(res==PQP_INTERSECTION_FAIL)
   {
-    return 2;
+    return PQP_INTERSECTION_FAIL;
   }
   return int(collide.Colliding()!=0);
 }
