@@ -679,7 +679,7 @@ PQP_Collide(PQP_CollideResult *res,
 void
 DistanceRecurse(PQP_DistanceResult *res,
                 const PQP_Model *o1, int b1,
-                const PQP_Model *o2, int b2)
+                const PQP_Model *o2, int b2,bool max_distance=false)
 {
   PQP_REAL sz1 = o1->child(b1)->GetSize();
   PQP_REAL sz2 = o2->child(b2)->GetSize();
@@ -698,8 +698,8 @@ DistanceRecurse(PQP_DistanceResult *res,
     Tri *t2 = &o2->tris[-o2->child(b2)->first_child - 1];
 
     PQP_REAL d = TriDistance(res->R,res->T,t1,t2,p,q);
-  
-    if (d < res->distance) 
+
+    if (((d < res->distance) && !max_distance) || ( (d > res->distance  &&  max_distance)))
     {
       res->distance = d;
 
@@ -745,40 +745,75 @@ DistanceRecurse(PQP_DistanceResult *res,
   PQP_REAL d1 = BV_Distance2(res->R, res->T, o1->child(a1), o2->child(a2));
   PQP_REAL d2 = BV_Distance2(res->R, res->T, o1->child(c1), o2->child(c2));
 
-  if (d2 < d1)
+  if(!max_distance)
   {
-    if ((d2 < (res->distance - res->abs_err)) || 
-        (d2*(1 + res->rel_err) < res->distance)) 
-    {      
-      DistanceRecurse(res, o1, c1, o2, c2);      
+    if (d2 < d1)
+    {
+      if ((d2 < (res->distance - res->abs_err)) || 
+          (d2*(1 + res->rel_err) < res->distance)) 
+      {      
+        DistanceRecurse(res, o1, c1, o2, c2,max_distance);      
+      }
+      
+      if ((d1 < (res->distance - res->abs_err)) || 
+          (d1*(1 + res->rel_err) < res->distance)) 
+      {      
+        DistanceRecurse(res, o1, a1, o2, a2,max_distance);
+      }
     }
-
-    if ((d1 < (res->distance - res->abs_err)) || 
-        (d1*(1 + res->rel_err) < res->distance)) 
-    {      
-      DistanceRecurse(res, o1, a1, o2, a2);
+    else 
+    {
+      if ((d1 < (res->distance - res->abs_err)) || 
+          (d1*(1 + res->rel_err) < res->distance)) 
+      {      
+        DistanceRecurse(res, o1, a1, o2, a2,max_distance);
+      }
+      
+      if ((d2 < (res->distance - res->abs_err)) || 
+          (d2*(1 + res->rel_err) < res->distance)) 
+      {      
+        DistanceRecurse(res, o1, c1, o2, c2,max_distance);      
+      }
     }
   }
+  else
+  {
+    if (d2 > d1)
+    {
+      if ((d2 > (res->distance - res->abs_err)) || 
+          (d2*(1 + res->rel_err) > res->distance)) 
+      {      
+        DistanceRecurse(res, o1, c1, o2, c2,max_distance);      
+      }
+      
+      if ((d1 > (res->distance - res->abs_err)) || 
+          (d1*(1 + res->rel_err) > res->distance)) 
+      {      
+        DistanceRecurse(res, o1, a1, o2, a2,max_distance);
+      }
+    }
   else 
   {
-    if ((d1 < (res->distance - res->abs_err)) || 
-        (d1*(1 + res->rel_err) < res->distance)) 
+    if ((d1 > (res->distance - res->abs_err)) || 
+        (d1*(1 + res->rel_err) > res->distance)) 
     {      
-      DistanceRecurse(res, o1, a1, o2, a2);
+      DistanceRecurse(res, o1, a1, o2, a2,max_distance);
     }
 
-    if ((d2 < (res->distance - res->abs_err)) || 
-        (d2*(1 + res->rel_err) < res->distance)) 
+    if ((d2 > (res->distance - res->abs_err)) || 
+        (d2*(1 + res->rel_err) > res->distance)) 
     {      
-      DistanceRecurse(res, o1, c1, o2, c2);      
+      DistanceRecurse(res, o1, c1, o2, c2,max_distance);      
     }
   }
+  }
+  
 }
 
 void
 DistanceQueueRecurse(PQP_DistanceResult *res, 
                      const PQP_Model *o1, int b1,
-                     const PQP_Model *o2, int b2)
+                     const PQP_Model *o2, int b2,bool max_distance=false)
 {
   BVTQ bvtq(res->qsize);
 
@@ -803,8 +838,8 @@ DistanceQueueRecurse(PQP_DistanceResult *res,
       Tri *t2 = &o2->tris[-o2->child(min_test.b2)->first_child - 1];
 
       PQP_REAL d = TriDistance(res->R,res->T,t1,t2,p,q);
-  
-      if (d < res->distance)
+
+      if (((d < res->distance) && !max_distance) || ( (d > res->distance  &&  max_distance)))
       {
         res->distance = d;
 
@@ -819,7 +854,7 @@ DistanceQueueRecurse(PQP_DistanceResult *res,
     {  
       // queue can't get two more tests, recur
       
-      DistanceQueueRecurse(res,o1,min_test.b1,o2,min_test.b2);
+      DistanceQueueRecurse(res,o1,min_test.b1,o2,min_test.b2,max_distance);
     }
     else 
     {  
@@ -904,7 +939,7 @@ PQP_Distance(PQP_DistanceResult *res,
              PQP_REAL R1[3][3], PQP_REAL T1[3], const PQP_Model *o1,
              PQP_REAL R2[3][3], PQP_REAL T2[3], const PQP_Model *o2,
              PQP_REAL rel_err, PQP_REAL abs_err,
-             int qsize,PQP_REAL init_bound)
+             int qsize,PQP_REAL init_bound, bool max_distance)
 {
   
   
@@ -997,6 +1032,7 @@ PQP_Distance(PQP_DistanceResult *res,
   }
   return PQP_OK;
 }
+
 
 // Tolerance Stuff
 //

@@ -63,6 +63,8 @@ class CollisionMeshQuery
   int CollideAll();
   Real Distance(Real absErr,Real relErr,Real bound=Inf);
   Real Distance_Coherent(Real absErr,Real relErr,Real bound=Inf);
+  Real FurthestDistance(Real absErr,Real relErr,Real bound=Inf);
+
   bool WithinDistance(Real tol);
   bool WithinDistanceAll(Real tol);
   Real PenetrationDepth(); //note: calls CollideAll(), returns -0 if seperated

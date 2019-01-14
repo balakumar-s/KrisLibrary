@@ -279,7 +279,7 @@ PQP_Distance(PQP_DistanceResult *result,
              PQP_REAL R1[3][3], PQP_REAL T1[3], const PQP_Model *o1,
              PQP_REAL R2[3][3], PQP_REAL T2[3], const PQP_Model *o2,
              PQP_REAL rel_err, PQP_REAL abs_err,
-             int qsize = 2, PQP_REAL init_bound = -1);
+             int qsize = 2, PQP_REAL init_bound = -1,bool max_distance=false);
 
 //----------------------------------------------------------------------------
 //

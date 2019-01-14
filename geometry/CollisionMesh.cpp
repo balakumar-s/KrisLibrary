@@ -243,6 +243,23 @@ Real CollisionMeshQuery::Distance(Real absErr,Real relErr,Real bound)
   return pqpResults->distance.Distance();
 }
 
+Real CollisionMeshQuery::FurthestDistance(Real absErr,Real relErr,Real bound)
+{
+  if(m1->tris.empty() || m2->tris.empty()) return Inf;
+  if(m1->pqpModel == NULL || m2->pqpModel == NULL) return false;
+  PQP_REAL R1[3][3],T1[3],R2[3][3],T2[3];
+  RigidTransformToPQP(m1->currentTransform,R1,T1);
+  RigidTransformToPQP(m2->currentTransform,R2,T2);
+  if(IsInf(bound)) bound=-1;
+  int res = PQP_Distance(&pqpResults->distance,
+			 R1,T1,m1->pqpModel,
+			 R2,T2,m2->pqpModel,
+			 relErr,absErr,
+			 100,bound,true);
+  Assert(res == PQP_OK);
+  return pqpResults->distance.Distance();
+}
+
 Real CollisionMeshQuery::Distance_Coherent(Real absErr,Real relErr,Real bound)
 {
   if(m1->tris.empty() || m2->tris.empty()) return Inf;
